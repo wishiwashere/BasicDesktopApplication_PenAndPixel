@@ -567,6 +567,7 @@ public void switchScreens() {
     // Calling the fadeToScreen method, so that if a click occurs while on this screen, the
     // user will be taken to the "HomeScreen"
     fadeToScreen("CameraLiveViewScreen");
+    getRandomLocation();
   } else {
     println("This screen doesn't exist");
   }
@@ -1090,7 +1091,7 @@ public void getSpecificRandomLocation(int direction) {
 
 /*-------------------------------------- LoadGoogleImage() -----------------------------------*/
 public void loadGoogleImage() {
-
+  
   // Using ternary operators to determine the width and height of the google image we are about to load in.
   // If the device orientation is equal to 0, then the device is standing upright, and the image will need
   // to be the width of the app, and the height of the app. Conversely, if the device orientation is equal to

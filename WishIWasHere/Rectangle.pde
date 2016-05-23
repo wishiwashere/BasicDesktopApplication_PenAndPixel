@@ -319,7 +319,7 @@ public class Rectangle {
 
     // Adding the image to the screen, setting the x and y positions to 0, as the actual position on the screen will depend
     // on the matrix's translation. Setting the width and height of the image to be equal to the values passed into the function
-    //image(img, 0, 0, (float)(imgWidth), (float)(imgHeight));
+    image(img, 0, 0, imgWidth, imgHeight);
 
     // Restoring the matrix to it's previous state (which was stored when we called the .pushMatrix() method at the start
     // of this function)

@@ -20,12 +20,9 @@ public class CameraLiveViewScreen extends Screen {
     // a name for the icon, followed by a boolean to choose whether this name should be displayed on
     // the icon or not. Finally, passing in a linkTo value of the name of the screen or function they
     // will later link to.
-    //Icon homeIcon = new Icon(iconRightX, iconTopY, loadImage("homeIconWhiteImage.png"), "Home", false, "HomeScreen");
-   // favIcon = new Icon(iconLeftX, iconTopY, loadImage("favIconImage.png"), "Add to Favourites", false, "_addToFavourites");
     Icon shutterIcon = new Icon(iconCenterX, iconBottomY, loadImage("shutterIconImage.png"), "Take a Picture", false, "_mergeImages");
 
     // Creating a temporary allIcons array to store the icon/s we have created above.
-    //Icon[] allIcons = {homeIcon, favIcon, shutterIcon};
     Icon[] allIcons = {shutterIcon};
 
     // Calling the setScreenIcons() method of this screen's super class (Screen). This passes
