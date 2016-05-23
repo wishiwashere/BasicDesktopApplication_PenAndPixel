@@ -11,6 +11,12 @@ import processing.video.*;
 import java.io.File;
 import java.util.ArrayList;
 
+/*-------------------------------------- Key Code Variables -------------------------*/
+int leftArrowKeyMac = 37;
+int leftArrowKeyPointer = 33;
+int rightArrowKeyMac = 39;
+int rightArrowKeyPointer = 34; 
+
 /*-------------------------------------- Navigation/Status Variables -------------------------*/
 // Setting the default screen to be the LoadingScreen, so that when the app is loaded,
 // this is the first screen that is displayed. Since this global variable is available
@@ -35,6 +41,7 @@ public String callFunction = "";
 // occurs, and then reset to false when a element identifies itself as having been clicked on,
 // or when a scrolling event is detected.
 public Boolean mouseClicked = false;
+public Boolean mouseMoved = false;
 
 // Creating public booleans, to monitor which functionalities are currently turned on/off.
 // If a user has autoSaveModeOn turned on, as defined by their user preferences, this boolean
@@ -55,7 +62,7 @@ public Boolean autoSaveModeOn = true;
 public Boolean learningModeOn = false;
 public Boolean sendToTwitterOn = false;
 public Boolean saveThisImageOn = true;
-public Boolean twitterLoggedIn = true;
+public Boolean twitterLoggedIn = false;
 
 // Creating public booleans, which result screens (such as ShareSaveSuccessfulScreen) will use to
 // determine which actions were successfully completed i.e. if the image was shared, saved or
@@ -408,7 +415,7 @@ public void setup() {
   } else {
     println("Directory already exists");
   }
-  
+
   getRandomLocation();
 }
 
@@ -438,6 +445,16 @@ public void mousePressed() {
   mouseClicked = true;
 }
 
+public void mouseClicked() {
+  if (currentScreen.equals("CameraLiveViewScreen")) {
+    mergeImages();
+  }
+}
+
+public void mouseMoved() {
+  mouseMoved = true;
+}
+
 /*-------------------------------------- keyPressed() ----------------------------------------*/
 public void keyPressed() {
 
@@ -446,10 +463,10 @@ public void keyPressed() {
     if (keyCode == 32) {
       // SPACEBAR
       mergeImages();
-    } else if (keyCode == 37) {
+    } else if (keyCode == leftArrowKeyMac || keyCode == leftArrowKeyPointer) {
       // LEFT ARROW
       getSpecificRandomLocation(-1);
-    } else if (keyCode == 39) {
+    } else if (keyCode == rightArrowKeyMac || keyCode == rightArrowKeyPointer) {
       // RIGHT ARROW
       getSpecificRandomLocation(1);
     }
@@ -509,7 +526,7 @@ public void switchScreens() {
   // Adding the general background image. The purpose of this is that individual screens do not
   // need to contain their own backgrounds, and thus reduces the load on memory.
   image(generalPageBackgroundImage, appWidth / 2, appHeight / 2, appWidth, appHeight);
-  
+
   // Checking if the String that is stored in the currentScreen variable
   // (which gets set in the ClickableElement class when an icon is clicked on) is
   // equal to a series of class Names (i.e. HomeScreen), and if it is, then show that screen.
@@ -629,15 +646,14 @@ public void fadeToScreen(String nextScreen) {
   // them, so that the next screen can be triggered the next time a mouse click occurs or will
   // otherwise disappear after 50 frames
   if (frameCount % 100 == 0 || mouseClicked || keyPressed) {
-    
+
     // Setting the global currentScreen method to be equal to the nextScreen (passed into this function)
     currentScreen = nextScreen;
-    
+
     // Resetting the mouse clicked and pressed booleans to false, so that no accidental clicks can
     // occur while the screen is being changed
     mouseClicked = false;
     mousePressed = false;
-    
   }
 }
 
@@ -850,8 +866,8 @@ public void removeGreenScreen() {
     if ((greenPixels < (appWidth * appHeight * 0.10)) && learningModeOn) {
       // Triggering the Toast pop up (declared in the main activity) to encourage the user to reframe the
       // image as it currently has less that 10% green in it
-      println("Not enough green in the image");
-      println("Threshold = " + (appWidth * appHeight * 0.10) + "; greenPixels = " + greenPixels);
+      //println("Not enough green in the image");
+      //println("Threshold = " + (appWidth * appHeight * 0.10) + "; greenPixels = " + greenPixels);
     } else {
       //println("Plenty of green in the image");
       //println("Threshold = " + (appWidth * appHeight * 0.10) + "; greenPixels = " + greenPixels);
@@ -992,9 +1008,9 @@ public void getSpecificRandomLocation(int direction) {
   // Reloading the randomLocations XML (so that if we add new locations during the event, they will be automatically
   // added here
   randomLocations = loadXML("https://wishiwashere.github.io/random_locations.xml").getChildren("location");
-  
+
   String printMessage = "";
-  
+
   // Determing an index value, based on the amount of locations stored in the randomLocations XML file
   if (direction == 1) {
     currentLocationIndex = currentLocationIndex + direction > randomLocations.length - 1 ? 0 : currentLocationIndex + direction;
@@ -1012,7 +1028,7 @@ public void getSpecificRandomLocation(int direction) {
   currentLocationName = randomLocations[currentLocationIndex].getString("name");
 
   println(printMessage + " - " + currentLocationName);
-  
+
   // Calling the loadGoogleImage() method, to load in the random location's image, with the relevant
   // properties using the new values assigned above.
   loadGoogleImage();

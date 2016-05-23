@@ -7,31 +7,7 @@ public class CameraLiveViewScreen extends Screen {
   /*-------------------------------------- Constructor() ------------------------------------------------*/
   // Creating a public constructor for the class so that an instance of it can be declared in the main sketch
   public CameraLiveViewScreen() {
-
     super();
-
-    // Creating the icon/s for this screen, using a locally scoped variable for the home, shutter and
-    // switchView icons, as these icons will be only ever be referred to from the allIcons array.
-    // Initialising the one public icon which was declared earlier in this class, as it will be
-    // accessible from all classes so it's background image can be updated when needed.
-    // Setting their x, and y, based on percentages of the width and height (where icon positioning
-    // variables are used, these were defined in the main  Not passing in any width or height,
-    // so as to allow this icon to be set to the default size in the Icon class of the app. Passing in
-    // a name for the icon, followed by a boolean to choose whether this name should be displayed on
-    // the icon or not. Finally, passing in a linkTo value of the name of the screen or function they
-    // will later link to.
-    Icon shutterIcon = new Icon(iconCenterX, iconBottomY, loadImage("shutterIconImage.png"), "Take a Picture", false, "_mergeImages");
-
-    // Creating a temporary allIcons array to store the icon/s we have created above.
-    Icon[] allIcons = {shutterIcon};
-
-    // Calling the setScreenIcons() method of this screen's super class (Screen). This passes
-    // the temporary allIcons array to the screenIcons array of the Screen class so that they
-    // can be looped through by the showScreen() method, and methods inherited from the Icon
-    // class (such as showIcon and checkMouseOver) can be called on them from within this array.
-    // This reduces the need for each screen to have to loop through it's icons, or call the
-    // same method on multiple icons.
-    this.setScreenIcons(allIcons);
   }
 
   // Creating a public showScreen method, which is called by the draw() funciton whenever this
@@ -39,7 +15,7 @@ public class CameraLiveViewScreen extends Screen {
   public void showScreen() {
 
     // Checking if the mouse is pressed (i.e. the user wants to scroll around the background of this image)
-    if (mousePressed) {
+    if (mouseMoved) {
 
       // Calculating the amount scrolled on the x axis, based on the distance between the previous x position,
       // and the current x position, as well as the amount scrolled on the y axis based on the distance between
@@ -66,20 +42,19 @@ public class CameraLiveViewScreen extends Screen {
       if (pmouseX > mouseX) {
         // The previous mouse X was further along than the current mouseX
 
-        // Device is standing upright - so the user wanted to scroll right
-        googleImageHeading = (googleImageHeading + amountScrolledX) > 359 ? 0 : googleImageHeading + amountScrolledX;
-
-        // Logging out the current heading of the Google image (for TESTING purposes)
-        println("Scrolled right. Heading is now " + googleImageHeading);
-      } else {
-        // The previous mouse X is less than the current mouse X
-
-
         // Device is standing upright - so the user wanted to scroll left
         googleImageHeading = (googleImageHeading - amountScrolledX) < 0 ? 359 : googleImageHeading - amountScrolledX;
 
         // Logging out the current heading of the Google image (for TESTING purposes)
         println("Scrolled left. Heading is now " + googleImageHeading);
+      } else {
+        // The previous mouse X is less than the current mouse X
+
+        // Device is standing upright - so the user wanted to scroll right
+        googleImageHeading = (googleImageHeading + amountScrolledX) > 359 ? 0 : googleImageHeading + amountScrolledX;
+
+        // Logging out the current heading of the Google image (for TESTING purposes)
+        println("Scrolled right. Heading is now " + googleImageHeading);
       }
 
 
@@ -88,25 +63,26 @@ public class CameraLiveViewScreen extends Screen {
       if (pmouseY > mouseY) {
         // The previous mouse Y was further along than the current mouse Y
 
-        // Device is standing upright - so the user wanted to scroll up
-        googleImagePitch = (googleImagePitch - amountScrolledY) < -90 ? -90 : googleImagePitch - amountScrolledY;
-
-        // Logging out the current pitch of the Google image (for TESTING purposes)
-        println("Scrolled up. Pitch is now " + googleImagePitch);
-      } else {
-        // The previous mouse Y is less than the current mouse Y
-
-
         // Device is standing upright - so the user wanted to scroll down
         googleImagePitch = (googleImagePitch + amountScrolledY) > 90 ? 90 : googleImagePitch + amountScrolledY;
 
         // Logging out the current pitch of the Google image (for TESTING purposes)
         println("Scrolled down. Pitch is now " + googleImagePitch);
+      } else {
+        // The previous mouse Y is less than the current mouse Y
+
+        // Device is standing upright - so the user wanted to scroll up
+        googleImagePitch = (googleImagePitch - amountScrolledY) < -90 ? -90 : googleImagePitch - amountScrolledY;
+
+        // Logging out the current pitch of the Google image (for TESTING purposes)
+        println("Scrolled up. Pitch is now " + googleImagePitch);
       }
 
       // Calling the loadGoogleImage method from the main Sketch class, so that a new google image will be
       // loaded in, with the new heading and pitch values specified above.
       loadGoogleImage();
+
+      mouseMoved = false;
     }
 
     // Adding the currentLocationImage to the CameraLiveViewScreen, so that the user can feel like they are taking a picture
@@ -121,7 +97,7 @@ public class CameraLiveViewScreen extends Screen {
     // front facing cameras read in images in reverse (so they no longer appear reversed). Setting the rotation of this image
     // to be equal to the cameraRotation, which accounts for and corrects the way in which ketaiCamera reads in images, so the
     // image appears in the correct orientation.
-    this.addImage(currentImage, appWidth, appHeight, cameraScale);
+    //this.addImage(currentImage, appWidth, appHeight, cameraScale);
 
     // Calling the super class's (Screen) drawScreen() method, to display each of this screen's icons.
     // This method will then in turn call it's super class's (Rectangle) method, to generate the screen. Calling this
