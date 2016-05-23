@@ -75,13 +75,6 @@ private Boolean imageMerging = false;
 // overloaded
 private Boolean readingImage = false;
 
-/*-------------------------------------- Text Inputs -----------------------------------------*/
-// Creating two private variables, which will contain the TextInput object, as well as it's
-// value, that is currently in focus. These variables are initialised within the TextInput
-// class when an input has been clicked on
-public TextInput currentTextInput = null;
-public String currentTextInputValue = "";
-
 /*-------------------------------------- XML Data --------------------------------------------*/
 // Creating an array of random locations based on the random location XML file in the
 // assets folder. Storing these in a separate XML file to the user preferences, so that
@@ -415,6 +408,8 @@ public void setup() {
   } else {
     println("Directory already exists");
   }
+  
+  getRandomLocation();
 }
 
 /*-------------------------------------- Draw() ----------------------------------------------*/
@@ -458,40 +453,6 @@ public void keyPressed() {
       // RIGHT ARROW
       getSpecificRandomLocation(1);
     }
-  }
-
-  if (currentTextInput != null) {
-
-    // Getting the current input value of this text input (i.e. so that if a user clicks between different
-    // text fields, they can resume their input instead of the TextInput becoming empty)
-    currentTextInputValue = currentTextInput.getInputValue();
-    // Checking if the key pressed is a coded value i.e. backspace etc
-
-    // Checking if the key pressed was the backspace key
-    if (keyCode == 8) {
-      // Checking that the length of the current currentTextInputValue string is greater than 0 (i.e.
-      // if the string is empty, don't try to delete anything)
-      if (currentTextInputValue.length() > 0) {
-        //println("BACKSPACE");
-        // Removing the last character from currentTextInputValue string, by creating a substring
-        // of currentTextInputValue, that is one shorter than the current currentTextInputValue string
-        currentTextInputValue = currentTextInputValue.substring(0, currentTextInputValue.length() - 1);
-      }
-    } else if(key != CODED) {
-      // This is a character key
-      // Checking if the current length of the text in this TextInput exceeds it's maximum character length,
-      // i.e. if this is the TextInput for adding a message to a tweet, then the maximum length will be set
-      // to ensure that a user cannot exceed this
-      if (currentTextInputValue.length() < currentTextInput.getMaxTextLength() - 1) {
-        // Adding the character to currentTextInputValue string
-        currentTextInputValue += key;
-      } else {
-        println("This text is too long");
-      }
-    }
-
-    // Passing the currentTextInputValue string into the setInputValue of the currentTextInput field
-    currentTextInput.setInputValue(currentTextInputValue);
   }
 }
 
@@ -548,7 +509,7 @@ public void switchScreens() {
   // Adding the general background image. The purpose of this is that individual screens do not
   // need to contain their own backgrounds, and thus reduces the load on memory.
   image(generalPageBackgroundImage, appWidth / 2, appHeight / 2, appWidth, appHeight);
-
+  
   // Checking if the String that is stored in the currentScreen variable
   // (which gets set in the ClickableElement class when an icon is clicked on) is
   // equal to a series of class Names (i.e. HomeScreen), and if it is, then show that screen.
@@ -562,14 +523,13 @@ public void switchScreens() {
     imageShared = false;
     compiledImage = null;
     myCameraLiveViewScreen.showScreen();
-  }else if (currentScreen.equals("LoadingScreen")) {
+  } else if (currentScreen.equals("LoadingScreen")) {
     myLoadingScreen.showScreen();
     // Calling the fadeToScreen method, so that if a click occurs while on this screen, the
-    // user will be taken to the "HomeScreen"
+    // user will be taken to the "CameraLiveViewScreen"
     fadeToScreen("CameraLiveViewScreen");
-    getRandomLocation();
   } else {
-    println("This screen doesn't exist");
+    println("This screen doesn't exist - " + currentScreen);
   }
 }
 
@@ -581,18 +541,8 @@ public void checkFunctionCalls() {
   // to a function, as opposed to a Screen, the link must start with "_"
   if (callFunction.equals("")) {
     // No function needs to be called
-  } else if (callFunction.equals("_keepImage")) {
-    keepImage();
-  }else if (callFunction.equals("_addToFavourites")) {
-    thread("addToFavourites");
-  } else if (callFunction.equals("_switchLearningMode")) {
-    switchLearningMode();
-  } else if (callFunction.equals("_sendTweet")) {
-    sendTweet();
   } else if (callFunction.equals("_mergeImages")) {
     mergeImages();
-  }  else if (callFunction.equals("_getRandomLocation")) {
-    getRandomLocation();
   } else {
     println(callFunction + " - This function does not exist / cannot be triggered by this icon");
   }
@@ -618,34 +568,15 @@ public void keepImage() {
     // successfully or not
     if (saveImageToPhotoGallery()) {
       println("Saved Image!!");
+      if (sendToTwitterOn) {
+        sendTweet();
+      }
     } else {
       println("Failed to save image");
-
-      // Determining which screen to redirect the user to, based on whether they also want
-      // to send this image to Twitter or not. If a user is logged in to Twitter, then
-      // sendToTwitterOn will be changed to true. If they then decided to disable/enable
-      // sending to Twitter for individual images (in SaveShareScreenA) then this boolean
-      // will toggle on/off. If the user is also sending the image to Twitter, then taking
-      // them to SaveShareScreenB, so they can add a message to their tweet, otherwise
-      // taking them to the ShareSaveUnsuccessfulScreen, where the imageShared and imageSaved
-      // booleans will determine which tasks have been unsuccessfully completed, in order to
-      // display the appropriate options on screen
-      currentScreen = sendToTwitterOn ? "SaveShareScreenB" : "ShareSaveUnsuccessfulScreen";
     }
   } else {
     // The user does not want to save the image
-
     println("KEEP IMAGE - This image was not saved. autoSaveModeOn = " + autoSaveModeOn + " and saveThisImageOn = " + saveThisImageOn);
-
-    // Determining which screen to redirect the user to, based on whether they also want
-    // to send this image to Twitter or not. If a user is logged in to Twitter, then
-    // sendToTwitterOn will be changed to true. If they then decided to disable/enable
-    // sending to Twitter for individual images (in SaveShareScreenA) then this boolean
-    // will toggle on/off. If the user is sending the image to Twitter, then taking
-    // them to SaveShareScreenB, so they can add a message to their tweet, otherwise
-    // taking them back to the CameraLiveViewScreen, as they have decided not to save
-    // or share this image
-    currentScreen = sendToTwitterOn ? "SaveShareScreenB" : "CameraLiveViewScreen";
   }
 }
 /*-------------------------------------- SaveImageToPhotoGallery() ---------------------------*/
@@ -697,19 +628,16 @@ public void fadeToScreen(String nextScreen) {
   // This method is used by Screen's that do not inherently have any interactions associated with
   // them, so that the next screen can be triggered the next time a mouse click occurs or will
   // otherwise disappear after 50 frames
-  if (frameCount % 50 == 0 || mouseClicked || keyPressed) {
-
-    // Setting the instance of the LoadingScreen to null, as this screen can only ever be accessed
-    // once in any app session
-    myLoadingScreen = null;
-
+  if (frameCount % 100 == 0 || mouseClicked || keyPressed) {
+    
     // Setting the global currentScreen method to be equal to the nextScreen (passed into this function)
     currentScreen = nextScreen;
-
+    
     // Resetting the mouse clicked and pressed booleans to false, so that no accidental clicks can
     // occur while the screen is being changed
     mouseClicked = false;
     mousePressed = false;
+    
   }
 }
 
@@ -737,13 +665,13 @@ public void sendTweet() {
   // have to be shared online
   if (twitterLoggedIn && sendToTwitterOn) {
 
-  
+
 
     // Acessing the current value of the TextInput on SaveShareScreenB i.e. the message the user would
     // like to add to their tweet
     //String message = mySaveShareScreenB.messageInput.getInputValue();
     String message = "Having fun at Pen and Pixel 2016";
-    
+
     // Wrapping the sending of this tweet in a try/catch, to catch any TwitterExceptions that may be thrown
     try {
 
@@ -1015,19 +943,13 @@ public void mergeImages() {
     mergedImage = null;
     overlayImage = null;
 
-    // Sending the user to the image preview screen, so that they can see their image before choosing to save and/or
-    // share it (in the screens that follow)
-    currentScreen = "ImagePreviewScreen";
+    keepImage();
   } 
   catch (OutOfMemoryError e) {
     println("Could not save image - " + e);
 
     // Resetting image merging to false, as this image was not able to be merged
     imageMerging = false;
-
-    // Sending the user back to the camera live view screen, as the device is unable to merge
-    // their current view into an image at this time
-    currentScreen = "CameraLiveViewScreen";
   }
 
   // Resetting imageMerging and readingImage to false, so that when the user returns to the CameraLiveViewScreen
@@ -1043,7 +965,6 @@ public void getRandomLocation() {
   // random location is found, and a request is made to the loadGoogleImage() method, to request a new Google
   // Street View Image, based on this location. Calling the switchScreens() method, so that this screen will
   // be displayed immediately
-  currentScreen = "SearchingScreen";
   switchScreens();
 
   println("Getting a random location");
@@ -1091,7 +1012,7 @@ public void getSpecificRandomLocation(int direction) {
 
 /*-------------------------------------- LoadGoogleImage() -----------------------------------*/
 public void loadGoogleImage() {
-  
+
   // Using ternary operators to determine the width and height of the google image we are about to load in.
   // If the device orientation is equal to 0, then the device is standing upright, and the image will need
   // to be the width of the app, and the height of the app. Conversely, if the device orientation is equal to

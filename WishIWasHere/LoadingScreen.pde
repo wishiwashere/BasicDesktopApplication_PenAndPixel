@@ -20,7 +20,7 @@ public class LoadingScreen extends Screen {
   // Creating a public showScreen method, which is called by the draw() funciton whenever this
   // screen needs to be displayed
   public void showScreen() {
-
+    
     // Calling the super class's (Screen) drawScreen() method, to display each of this screen's icons.
     // This method will then in turn call it's super class's (Rectangle) method, to generate the screen.
     this.drawScreen();
