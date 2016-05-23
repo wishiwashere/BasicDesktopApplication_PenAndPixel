@@ -97,7 +97,7 @@ public class CameraLiveViewScreen extends Screen {
     // front facing cameras read in images in reverse (so they no longer appear reversed). Setting the rotation of this image
     // to be equal to the cameraRotation, which accounts for and corrects the way in which ketaiCamera reads in images, so the
     // image appears in the correct orientation.
-    //this.addImage(currentImage, appWidth, appHeight, cameraScale);
+    this.addImage(currentImage, appWidth, appHeight, cameraScale);
 
     // Calling the super class's (Screen) drawScreen() method, to display each of this screen's icons.
     // This method will then in turn call it's super class's (Rectangle) method, to generate the screen. Calling this

@@ -62,7 +62,7 @@ public Boolean autoSaveModeOn = true;
 public Boolean learningModeOn = false;
 public Boolean sendToTwitterOn = false;
 public Boolean saveThisImageOn = true;
-public Boolean twitterLoggedIn = false;
+public Boolean twitterLoggedIn = true;
 
 // Creating public booleans, which result screens (such as ShareSaveSuccessfulScreen) will use to
 // determine which actions were successfully completed i.e. if the image was shared, saved or
