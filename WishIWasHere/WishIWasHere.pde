@@ -989,13 +989,19 @@ public void getRandomLocation() {
 /*-------------------------------------- GetRandomLocation() ---------------------------------*/
 public void getSpecificRandomLocation(int direction) {
 
+  // Reloading the randomLocations XML (so that if we add new locations during the event, they will be automatically
+  // added here
+  randomLocations = loadXML("https://wishiwashere.github.io/random_locations.xml").getChildren("location");
+  
+  String printMessage = "";
+  
   // Determing an index value, based on the amount of locations stored in the randomLocations XML file
   if (direction == 1) {
     currentLocationIndex = currentLocationIndex + direction > randomLocations.length - 1 ? 0 : currentLocationIndex + direction;
-    println("Getting next random location");
+    printMessage = "Getting next random location";
   } else if (direction == -1) {
     currentLocationIndex = currentLocationIndex + direction < 0 ? randomLocations.length - 1: currentLocationIndex + direction;
-    println("Getting previous random location");
+    printMessage = "Getting previous random location";
   }
 
   // Setting the google image location variables, based on the relevant values from the random location
@@ -1005,6 +1011,8 @@ public void getSpecificRandomLocation(int direction) {
   googleImagePitch = Float.parseFloat(randomLocations[currentLocationIndex].getString("pitch"));
   currentLocationName = randomLocations[currentLocationIndex].getString("name");
 
+  println(printMessage + " - " + currentLocationName);
+  
   // Calling the loadGoogleImage() method, to load in the random location's image, with the relevant
   // properties using the new values assigned above.
   loadGoogleImage();
