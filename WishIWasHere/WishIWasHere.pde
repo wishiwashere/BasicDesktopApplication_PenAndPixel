@@ -1,5 +1,3 @@
-import processing.video.*;
-
 // Importing the Twitter4J library (for sending tweets to Twitter using a users's account, if they have logged in with Twitter)
 import twitter4j.*;
 import twitter4j.conf.*;
