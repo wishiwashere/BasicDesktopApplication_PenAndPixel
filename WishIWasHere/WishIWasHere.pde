@@ -727,125 +727,55 @@ public void sendTweet() {
 
 /*-------------------------------------- RemoveGreenScreen() ---------------------------------*/
 public void removeGreenScreen() {
-  // Can change this variable to "high" to apply the full green screen keying
-  // to the image (currently, the standard definition runs much faster and 
-  // gives a cleaner result to the final image)
-  String keyingQuality = "standard";
-  int greenPixels = 0;
 
   // Creating a local keyedImage variable, within which the image of the user, minus the green
   // screen background, will be created below
-  PImage keyedImage;
+  PImage keyedImage = createImage(currentFrame.width, currentFrame.height, ARGB);
 
   try {
-    //println("Starting removing Green Screen in " + keyingQuality + " quality at frame " + frameCount);
+    //println("Starting removing Green Screen at frame " + frameCount);
 
     // Changing the colour mode to HSB, so that I can work with the hue, satruation and
     // brightness of the pixels. Setting the maximum hue to 360, and the maximum saturation
     // and brightness to 100.
-    colorMode(HSB, 360, 100, 100);
-
-    // Defaulting the keyedImage the full currentFrame image, so that only green pixels have to
-    // be individually altered and unaffected pixels will already exist in the keyed image
-    keyedImage = currentFrame.get();
+    colorMode(HSB, 360, 100, 100, 100);
 
     // Loading in the pixel arrays of the keyed image
+    currentFrame.loadPixels();
     keyedImage.loadPixels();
 
     // Looping through each pixel of keyedImage, to check for any green and remove it
-    for (int i = 0; i < keyedImage.pixels.length; i++) {
+    for (int i = 0; i < currentFrame.pixels.length; i++) {
 
       // Getting the hue, saturation and brightness values of the current pixel
       float pixelHue = hue(currentFrame.pixels[i]);
 
       // If the hue of this pixel falls anywhere within the range of green in the colour spectrum,
       // then this pixel may be green
-      if (pixelHue > 60 && pixelHue < 180) {
+      if (pixelHue > 75 && pixelHue < 175) {
 
         // Since we do not yet know if this is a green pixel, accessing the saturation and brightness
         // of it's color so that we can carry out more specific checks on this pixel
         float pixelSaturation = saturation(currentFrame.pixels[i]);
         float pixelBrightness = brightness(currentFrame.pixels[i]);
 
-        if (keyingQuality.equals("high")) {
-          // Creating variables to store the hue of the pixels surrounding the current pixel.
-          // Defaulting these the be equal to the current pixels hue, and only changing them if
-          // the current pixel is away from the edge of the picture
-          float pixelHueToLeft = pixelHue;
-          float pixelHueToRight = pixelHue;
-          float pixelHueAbove = pixelHue;
-          float pixelHueBelow = pixelHue;
+        // If the saturation and brightness are above 30, then this is a green pixel
+        if (pixelSaturation < 30 || pixelBrightness < 20) {
 
-
-          // If the current pixel is not near the edge of the image, changing the values of the variables
-          // for the pixels around it to get their hue values
-          if (i > currentFrame.width + 1 && i < currentFrame.pixels.length - currentFrame.width - 1) {
-            pixelHueToLeft = hue(currentFrame.pixels[i - 1]);
-            pixelHueToRight = hue(currentFrame.pixels[i + 1]);
-            pixelHueAbove = hue(currentFrame.pixels[i - appWidth]);
-            pixelHueBelow = hue(currentFrame.pixels[i + appWidth]);
-          }
-
-          // If the saturation and brightness are above 30, then this is a green pixel
-          if (pixelSaturation > 30 && pixelBrightness > 30)
-          {
-            // If the hue of the pixel is between 90 and 100, this is not fully green, but with a tinge 
-            if (pixelHue > 90 && pixelHue < 100) {
-              // This seems to effect the girl's hair on the left
-              // Lowering the hue, saturation and opacity, to reduce the intensity of the colour
-              keyedImage.pixels[i] = color(pixelHue * 0.3, pixelSaturation * 0.4, pixelBrightness, 200);
-            } else if (pixelHue > 155) {
-              // Increasing the hue, and reducing the saturation
-              keyedImage.pixels[i] = color(pixelHue * 1.2, pixelSaturation * 0.5, pixelBrightness, 255);
-            } else if (pixelHue < 115) {
-              // Reducting the hue and saturation. Fixes the girl's hair (in greenScreenImage1) but adds in some of
-              // the green screeen in greenScreenImage2)
-              keyedImage.pixels[i] = color(pixelHue * 0.4, pixelSaturation * 0.5, pixelBrightness, 255);
-            } else {
-              // If the pixels around this pixel are in the more intense are of green, then assume this is part of the green screen
-              if (pixelHueToLeft > 90 && pixelHueToLeft < 150 && pixelHueToRight > 90 && pixelHueToRight < 150 && pixelHueAbove > 90 && pixelHueAbove < 150 && pixelHueBelow > 90 && pixelHueBelow < 150) {
-                // Set this pixel in the keyedImage to be transparent (Removing the main areas of the green)
-                keyedImage.pixels[i] = color(0, 0, 0, 0);
-              } else if (pixelHue > 130) {
-                // This seems to be the edges around the girl
-                // Increasing the hue, reducing the saturation and displaying the pixel at half opacity
-                keyedImage.pixels[i] = color(pixelHue * 1.1, pixelSaturation * 0.5, pixelBrightness, 150);
-              } else {
-                // Set this pixel in the keyedImage to be transparent (Removing the main areas of the green)
-                keyedImage.pixels[i] = color(0, 0, 0, 0);
-              }
-            }
-          } else {
-            // Even though this pixel falls within the green range of the colour spectrum, it's saturation and brightness
-            // are low enough that it is unlikely to be a part of the green screen, but may just be an element of the scene
-            // that is picking up a glow off the green screen. Lowering the hue and saturation to remove the green tinge 
-            // from this pixel.
-            keyedImage.pixels[i] = color(pixelHue * 0.6, pixelSaturation * 0.3, pixelBrightness);
-          }
-        } else {
-          // If the saturation and brightness are above 30, then this is a green pixel
-          if (pixelSaturation > 30 && pixelBrightness > 20) {
-
-            // Set this pixel in the keyedImage to be transparent (Removing the main areas of the green)
-            keyedImage.pixels[i] = color(0, 0, 0, 0);
-          } else {
-
-            // Even though this pixel falls within the green range of the colour spectrum, it's saturation and brightness
-            // are low enough that it is unlikely to be a part of the green screen, but may just be an element of the scene
-            // that is picking up a glow off the green screen. Lowering the hue and saturation to remove the green tinge
-            // from this pixel.
-            keyedImage.pixels[i] = color(pixelHue * 0.6, pixelSaturation * 0.3, pixelBrightness);
-          }
+          // Even though this pixel falls within the green range of the colour spectrum, it's saturation and brightness
+          // are low enough that it is unlikely to be a part of the green screen, but may just be an element of the scene
+          // that is picking up a glow off the green screen. Lowering the hue and saturation to remove the green tinge
+          // from this pixel.
+          keyedImage.pixels[i] = color(pixelHue * 0.6, pixelSaturation * 0.3, pixelBrightness);
         }
-
-        if (learningModeOn) {
-          greenPixels++;
-        }
+      } else {
+        keyedImage.pixels[i] = currentFrame.pixels[i];
       }
     }
 
     // Updating the pixel arrays of the keyed image
     keyedImage.updatePixels();
+    currentFrame.updatePixels();
 
     // Resetting the color mode to RGB. Resetting each of the colour channels to 8bits each i.e. true color (24bit)
     colorMode(RGB, 255, 255, 255);
@@ -860,17 +790,6 @@ public void removeGreenScreen() {
 
     // Resetting the readingImage variable to false, so that the next frame can be read in from the device camera
     readingImage = false;
-
-    if ((greenPixels < (appWidth * appHeight * 0.10)) && learningModeOn) {
-      // Triggering the Toast pop up (declared in the main activity) to encourage the user to reframe the
-      // image as it currently has less that 10% green in it
-      //println("Not enough green in the image");
-      //println("Threshold = " + (appWidth * appHeight * 0.10) + "; greenPixels = " + greenPixels);
-    } else {
-      //println("Plenty of green in the image");
-      //println("Threshold = " + (appWidth * appHeight * 0.10) + "; greenPixels = " + greenPixels);
-    }
-
 
     //println("Finished removing Green Screen at frame " + frameCount);
   } 
