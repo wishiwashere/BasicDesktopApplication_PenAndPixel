@@ -745,28 +745,85 @@ public void removeGreenScreen() {
     keyedImage.loadPixels();
 
     // Looping through each pixel of keyedImage, to check for any green and remove it
-    for (int i = 0; i < currentFrame.pixels.length; i++) {
+    for (int i = 0; i < keyedImage.pixels.length; i++) {
 
       // Getting the hue, saturation and brightness values of the current pixel
       float pixelHue = hue(currentFrame.pixels[i]);
 
       // If the hue of this pixel falls anywhere within the range of green in the colour spectrum,
       // then this pixel may be green
-      if (pixelHue > 75 && pixelHue < 175) {
+      if (pixelHue > 60 && pixelHue < 180) {
 
         // Since we do not yet know if this is a green pixel, accessing the saturation and brightness
         // of it's color so that we can carry out more specific checks on this pixel
         float pixelSaturation = saturation(currentFrame.pixels[i]);
         float pixelBrightness = brightness(currentFrame.pixels[i]);
 
-        // If the saturation and brightness are above 30, then this is a green pixel
-        if (pixelSaturation < 30 || pixelBrightness < 20) {
+        // Creating variables to store the hue of the pixels surrounding the current pixel.
+        // Defaulting these the be equal to the current pixels hue, and only changing them if
+        // the current pixel is away from the edge of the picture
+        float pixelHueToLeft = pixelHue;
+        float pixelHueToRight = pixelHue;
+        float pixelHueAbove = pixelHue;
+        float pixelHueBelow = pixelHue;
 
+
+        // If the current pixel is not near the edge of the image, changing the values of the variables
+        // for the pixels around it to get their hue values
+        if (i > appWidth + 1 && i < keyedImage.pixels.length - appWidth - 1) {
+          pixelHueToLeft = hue(currentFrame.pixels[i - 1]);
+          pixelHueToRight = hue(currentFrame.pixels[i + 1]);
+          pixelHueAbove = hue(currentFrame.pixels[i - appWidth]);
+          pixelHueBelow = hue(currentFrame.pixels[i + appWidth]);
+        }
+
+        // If the saturation and brightness are above 30, then this is a green pixel
+        if (pixelSaturation > 25 && pixelBrightness > 20) {
+          // If the hue of the pixel is between 90 and 100, this is not fully green, but with a tinge 
+          if (pixelHue > 90 && pixelHue < 100) {
+            // This seems to effect the edges around the brunette hair
+            // Lowering the hue, saturation and opacity, to reduce the intensity of the colour
+            keyedImage.pixels[i] = color(pixelHue * 0.3, pixelSaturation * 0.4, pixelBrightness, 200);
+          } else if (pixelHue > 155) {
+            // Increasing the hue, and reducing the saturation - SEEMS TO BREAK BACKGROUND
+            // CAUSES LIGHT TO APPEAR AT TOP OF GREEN SCREEN
+            //keyedImage.pixels[i] = color(pixelHue * 1.2, pixelSaturation * 0.5, pixelBrightness, 255);
+          } else if (pixelHue < 115) {
+            // Reducting the hue and saturation. Fixes the in-betweens of the hair
+            keyedImage.pixels[i] = color(pixelHue * 0.4, pixelSaturation * 0.5, pixelBrightness, 255);
+          } else {
+            // If the pixels around this pixel are in the more intense are of green, then assume this is part of the green screen
+            if (pixelHueToLeft > 90 && pixelHueToLeft < 150 && pixelHueToRight > 90 && pixelHueToRight < 150 && pixelHueAbove > 90 && pixelHueAbove < 150 && pixelHueBelow > 90 && pixelHueBelow < 150) {
+              // Ignoring this pixel
+              if (pixelHue < 110 || pixelHue > 130) {
+                if (pixelSaturation < 40) {
+                  keyedImage.pixels[i] = color(pixelHue * 0.5, pixelSaturation * 0.6, pixelBrightness * 0.7, 255);
+                } else if (pixelBrightness < 40 || pixelBrightness > 90) {
+                  if (pixelHue < 120) {
+                    // FIXES SIDES OF HAIR (REALLY FIXES HAIR)
+                    keyedImage.pixels[i] = currentFrame.pixels[i];
+                  }
+                }
+              } 
+              if (pixelHue < 120 && pixelHue > 140) {
+                // FIXES HAIR
+                keyedImage.pixels[i] = currentFrame.pixels[i];
+              }
+            } else {
+              // BREAKS GREEN SCREEN
+              //keyedImage.pixels[i] = currentFrame.pixels[i];
+            }
+          }
+        } else if (pixelHue > 100 && pixelHue < 110 && pixelBrightness > 10 && pixelBrightness < 90) {
           // Even though this pixel falls within the green range of the colour spectrum, it's saturation and brightness
           // are low enough that it is unlikely to be a part of the green screen, but may just be an element of the scene
-          // that is picking up a glow off the green screen. Lowering the hue and saturation to remove the green tinge
+          // that is picking up a glow off the green screen. Lowering the hue and saturation to remove the green tinge 
           // from this pixel.
+          // REMOVES GREEN TINGE FROM PERSON
           keyedImage.pixels[i] = color(pixelHue * 0.6, pixelSaturation * 0.3, pixelBrightness);
+        } else {
+          // FILLS IN PERSONS BODY
+          keyedImage.pixels[i] = currentFrame.pixels[i];
         }
       } else {
         keyedImage.pixels[i] = currentFrame.pixels[i];
